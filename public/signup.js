@@ -25,7 +25,7 @@ signupForm.addEventListener('submit', (event) => {
     })
     .then((data) => {
         console.log("success", data);
-        alert(data.message);
+      
 
         // Clear input fields
         document.getElementById('name').value = '';

@@ -3,9 +3,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const port = 4000;
+const path=require('path');
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use('/public',express.static(path.join('public')));
 
 // Create MySQL connection
 const db = mysql.createPool({
@@ -23,9 +25,18 @@ db.getConnection()
     console.error('Error connecting to the database:', err);
   });
 
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'signup.html'));
+});
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'login.html'));
+});
+
 app.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
   try {
+    console.log(name,email,password);
     // Check if email already exists
     const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
 

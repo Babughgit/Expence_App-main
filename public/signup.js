@@ -1,11 +1,14 @@
-const signupForm = document.getElementById('signupForm');
-
 signupForm.addEventListener('submit', (event) => {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
 
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!name || !email || !password) {
+        alert('All fields are required');
+        return;
+    }
 
     fetch('/signup', {
         method: 'POST',
@@ -16,12 +19,14 @@ signupForm.addEventListener('submit', (event) => {
     })
     .then((response) => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            return response.text().then((message) => { throw new Error(message); });
         }
         return response.json();
     })
     .then((data) => {
         console.log("success", data);
+        alert(data.message);
+
         // Clear input fields
         document.getElementById('name').value = '';
         document.getElementById('email').value = '';
@@ -29,5 +34,6 @@ signupForm.addEventListener('submit', (event) => {
     })
     .catch((error) => {
         console.log("error", error);
+        alert('Error: ' + error.message);
     });
 });

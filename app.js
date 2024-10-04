@@ -1,42 +1,46 @@
 const mysql = require('mysql2/promise');
 const express = require('express');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
+const path = require('path');
 const app = express();
 const port = 4000;
-const path=require('path');
+const saltRounds = 10; // You can adjust the complexity of hashing
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use('/public',express.static(path.join('public')));
+app.use('/public', express.static(path.join('public')));
 
-// Create MySQL connection
+// Create MySQL connection pool
 const db = mysql.createPool({
   host: '127.0.0.1',
   user: 'root',
   password: 'Babusql@2024',
   database: 'Expense_App'
 });
+
 db.getConnection()
   .then(connection => {
     console.log('Database connected');
-    connection.release();  // Release the connection back to the pool
+    connection.release(); // Release the connection back to the pool
   })
   .catch(err => {
     console.error('Error connecting to the database:', err);
   });
 
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'signup.html'));
+// Serve signup and login pages
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'signup.html'));
 });
 
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'login.html'));
+  res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
 
+// Signup Route
 app.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
   try {
-    console.log(name,email,password);
     // Check if email already exists
     const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
 
@@ -44,8 +48,11 @@ app.post('/signup', async (req, res) => {
       return res.status(400).send('Email already registered');
     }
 
+    // Hash the password before storing it
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
     // Insert new user into the database
-    await db.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, password]);
+    await db.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword]);
     res.status(200).send('Signup successful');
   } catch (error) {
     console.error('Error during signup:', error);
@@ -65,8 +72,9 @@ app.post('/login', async (req, res) => {
 
     const user = rows[0];
 
-    // Check if password matches
-    if (user.password !== password) {
+    // Compare provided password with the stored hashed password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
       return res.status(401).send('Incorrect password');
     }
 

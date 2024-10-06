@@ -16,23 +16,23 @@ loginForm.addEventListener('submit', function (e) {
     fetch('/login', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json', // Correct the Content-Type
+            'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }), // Send email and password as JSON
+        body: JSON.stringify({ email, password }),
     })
     .then(function (response) {
         if (!response.ok) {
             return response.text().then((message) => { throw new Error(message); });
         }
-        return response.json(); // Parse the response as JSON if successful
+        return response.text(); // Parse the response as JSON if successful
     })
     .then(function (data) {
         console.log("Login success", data);
-        alert('Login successful'); // Inform the user about successful login
-        // Redirect or update the UI as needed (e.g., redirect to the dashboard)
+        alert('Login successful');
+        window.location.href = '/expense'; // Redirect to the expense page after login
     })
     .catch(function (error) {
         console.log("Login error", error);
-        alert('Error: ' + error.message); // Inform the user about any error
+        alert('Error: ' + error.message); // Display error message to the user
     });
 });

@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const app = express();
 const port = 4000;
-const saltRounds = 10; // You can adjust the complexity of hashing
+const saltRounds = 10; 
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -37,9 +37,14 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
 
+app.get('/expense', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'expense.html'));
+});
+
 // Signup Route
 app.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
+  console.log(name,email,password);
   try {
     // Check if email already exists
     const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
@@ -53,10 +58,10 @@ app.post('/signup', async (req, res) => {
 
     // Insert new user into the database
     await db.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword]);
-    res.status(200).send('Signup successful');
+    res.status(200).json({ message: "Signup successful" });
   } catch (error) {
     console.error('Error during signup:', error);
-    res.status(500).send('Server error');
+    res.status(500).json('Server error');
   }
 });
 
@@ -82,6 +87,39 @@ app.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).send('Server error');
+  }
+});
+
+app.post('/expenses', async (req, res) => {
+  const { amount, description, category } = req.body;
+
+  try {
+      // Insert the new expense into the database
+      await db.query('INSERT INTO expenses (amount, description, category) VALUES (?, ?, ?)', [amount, description, category]);
+      res.status(200).send('Expense added successfully');
+  } catch (error) {
+      console.error('Error adding expense:', error);
+      res.status(500).send('Server error');
+  }
+});
+app.get('/expenses', async (req, res) => {
+  try {
+      const [expenses] = await db.query('SELECT * FROM expenses');
+      res.status(200).json(expenses); // Send expenses as JSON
+  } catch (error) {
+      console.error('Error retrieving expenses:', error);
+      res.status(500).send('Server error');
+  }
+});
+app.delete('/expenses/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+      await db.query('DELETE FROM expenses WHERE id = ?', [id]);
+      res.status(200).send('Expense deleted successfully');
+  } catch (error) {
+      console.error('Error deleting expense:', error);
+      res.status(500).send('Server error');
   }
 });
 

@@ -57,7 +57,7 @@ app.post('/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Insert new user into the database
-    await db.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword]);
+    await db.query('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword]);
     res.status(200).json({ message: "Signup successful" });
   } catch (error) {
     console.error('Error during signup:', error);
@@ -91,17 +91,23 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/expenses', async (req, res) => {
-  const { amount, description, category } = req.body;
+  const { user_id, amount, description, category } = req.body; // Make sure to destructure user_id from the request body
+
+  if (!user_id) {
+    return res.status(400).send('User ID is required');
+  }
 
   try {
       // Insert the new expense into the database
-      await db.query('INSERT INTO expenses (amount, description, category) VALUES (?, ?, ?)', [amount, description, category]);
+      await db.query('INSERT INTO expenses (user_id, description, amount, category) VALUES (?, ?, ?, ?)', [user_id, description, amount, category]);
       res.status(200).send('Expense added successfully');
   } catch (error) {
       console.error('Error adding expense:', error);
       res.status(500).send('Server error');
   }
 });
+
+
 app.get('/expenses', async (req, res) => {
   try {
       const [expenses] = await db.query('SELECT * FROM expenses');
@@ -111,17 +117,32 @@ app.get('/expenses', async (req, res) => {
       res.status(500).send('Server error');
   }
 });
-app.delete('/expenses/:id', async (req, res) => {
-  const { id } = req.params;
+app.delete('/expenses/:expense_id', async (req, res) => {
+  console.log('Received DELETE request:', req.params); // Log parameters
+
+  const { expense_id } = req.params; // Extract expense_id from URL parameters
+
+  if (!expense_id) {
+      return res.status(400).send('Expense ID is required');
+  }
+
+  console.log('Expense ID:', expense_id); // Debugging line to check the value
 
   try {
-      await db.query('DELETE FROM expenses WHERE id = ?', [id]);
+      // Ensure that you are using the correct column name 'expense_id'
+      await db.query('DELETE FROM expenses WHERE expense_id = ?', [expense_id]);
       res.status(200).send('Expense deleted successfully');
   } catch (error) {
       console.error('Error deleting expense:', error);
       res.status(500).send('Server error');
   }
 });
+
+
+
+
+
+
 
 // Start the server
 app.listen(port, () => {

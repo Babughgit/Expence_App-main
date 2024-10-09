@@ -42,15 +42,18 @@ app.get('/expense', (req, res) => {
 });
 
 // Signup Route
+// Signup Route
+// Signup Route
+// Signup Route
 app.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
-  console.log(name,email,password);
   try {
     // Check if email already exists
     const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
 
+    // If the email already exists, return an error response with a flag
     if (existingUser.length > 0) {
-      return res.status(400).send('Email already registered');
+      return res.status(400).json({ error: 'Email already registered', redirect: true });
     }
 
     // Hash the password before storing it
@@ -58,12 +61,15 @@ app.post('/signup', async (req, res) => {
 
     // Insert new user into the database
     await db.query('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword]);
+    
+    // Return success message
     res.status(200).json({ message: "Signup successful" });
   } catch (error) {
     console.error('Error during signup:', error);
-    res.status(500).json('Server error');
+    res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 // Login Route
 app.post('/login', async (req, res) => {
@@ -91,14 +97,13 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/expenses', async (req, res) => {
-  const { user_id, amount, description, category } = req.body; // Make sure to destructure user_id from the request body
+  const { user_id, amount, description, category } = req.body; 
 
   if (!user_id) {
     return res.status(400).send('User ID is required');
   }
 
   try {
-      // Insert the new expense into the database
       await db.query('INSERT INTO expenses (user_id, description, amount, category) VALUES (?, ?, ?, ?)', [user_id, description, amount, category]);
       res.status(200).send('Expense added successfully');
   } catch (error) {
@@ -107,26 +112,37 @@ app.post('/expenses', async (req, res) => {
   }
 });
 
-
 app.get('/expenses', async (req, res) => {
   try {
       const [expenses] = await db.query('SELECT * FROM expenses');
-      res.status(200).json(expenses); // Send expenses as JSON
+      res.status(200).json(expenses); 
   } catch (error) {
       console.error('Error retrieving expenses:', error);
       res.status(500).send('Server error');
   }
 });
-app.delete('/expenses/:expense_id', async (req, res) => {
-  console.log('Received DELETE request:', req.params); // Log parameters
 
-  const { expense_id } = req.params; // Extract expense_id from URL parameters
+app.delete('/expenses/:expense_id', async (req, res) => {
+  const { expense_id } = req.params; 
 
   if (!expense_id) {
       return res.status(400).send('Expense ID is required');
   }
 
-  console.log('Expense ID:', expense_id); // Debugging line to check the value
+  try {
+      await db.query('DELETE FROM expenses WHERE expense_id = ?', [expense_id]);
+      res.status(200).send('Expense deleted successfully');
+  } catch (error) {
+      console.error('Error deleting expense:', error);
+      res.status(500).send('Server error');
+  }
+});
+app.delete('/expenses/:expense_id', async (req, res) => {
+  const { expense_id } = req.params; // Extract expense_id from URL parameters
+
+  if (!expense_id) {
+      return res.status(400).send('Expense ID is required');
+  }
 
   try {
       // Ensure that you are using the correct column name 'expense_id'
@@ -137,12 +153,6 @@ app.delete('/expenses/:expense_id', async (req, res) => {
       res.status(500).send('Server error');
   }
 });
-
-
-
-
-
-
 
 // Start the server
 app.listen(port, () => {

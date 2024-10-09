@@ -22,3 +22,11 @@ button {
     border: none;
     cursor: pointer;
 }
+#loginButton {
+    margin-top: 10px; 
+    margin-left: 250px;/* Adjust this value as needed */
+  }
+
+  #errorDisplay{
+    margin-left: 35rem;
+  }

@@ -1,38 +1,28 @@
 const loginForm = document.getElementById('loginForm');
+loginForm.addEventListener('submit', (event) => {
+    event.preventDefault();
 
-loginForm.addEventListener('submit', function (e) {
-    e.preventDefault(); // Prevent default form submission
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-
-    // Basic validation to check if fields are filled
-    if (!email || !password) {
-        alert('Please fill out both email and password fields.');
-        return;
-    }
-
-    // Send the login request
     fetch('/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
-    })
-    .then(function (response) {
+    }).then(function (response) {
         if (!response.ok) {
             return response.text().then((message) => { throw new Error(message); });
         }
-        return response.text(); // Parse the response as JSON if successful
+        return response.text(); 
     })
     .then(function (data) {
         console.log("Login success", data);
-        alert('Login successful');
-        window.location.href = '/expense'; // Redirect to the expense page after login
+        // Redirect to the expense page
+        window.location.href = '/expense'; 
     })
     .catch(function (error) {
-        console.log("Login error", error);
-        alert('Error: ' + error.message); // Display error message to the user
+        console.log("Login error", error.message);
     });
 });

@@ -4,23 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker</title> 
-    <link href="/public/expense.css" rel="stylesheet"> <!-- Link to your CSS file -->
+    <link href="/public/expense.css" rel="stylesheet">
 </head>
 <body>
     <div class="expense-form-container">
         <h1>Expense Tracker</h1>
+        <div id="userGreeting"></div>
+        <button id="logoutButton">Logout</button>
 
         <!-- Expense Form -->
         <form id="expenseForm">
-            <!-- Money Spent Input -->
             <label for="amount">Money Spent:</label>
             <input type="number" id="amount" name="amount" placeholder="Enter the amount" required><br><br>
 
-            <!-- Description Input -->
             <label for="description">Expense Description:</label>
             <input type="text" id="description" name="description" placeholder="Enter the description" required><br><br>
 
-            <!-- Category Dropdown -->
             <label for="category">Category:</label>
             <select id="category" name="category" required>
                 <option value="">--Select Category--</option>
@@ -31,17 +30,28 @@
                 <option value="Other">Other</option>
             </select><br><br>
 
-            <!-- Submit Button -->
             <button type="submit">Add Expense</button>
         </form>
 
-        <!-- List of Expenses -->
         <h2>Expense List</h2>
-        <ul id="expenseList">
-            <!-- Dynamic expenses will be listed here -->
-        </ul>
+        <ul id="expenseList"></ul>
     </div>
 
-    <script src="/public/expense.js"></script> <!-- Link to your JavaScript file -->
+    <script src="/public/expense.js"></script>
+    <script>
+        // Display the logged-in user's name
+        // Display the logged-in user's name
+const username = localStorage.getItem('username'); // Get username from local storage
+const userGreeting = document.getElementById('userGreeting');
+userGreeting.textContent = `Welcome, ${username ? username : 'Guest'}!`; // Fallback to 'Guest' if username is null
+
+
+        // Logout functionality
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = '/login'; // Redirect to login page
+        });
+    </script>
 </body>
 </html>

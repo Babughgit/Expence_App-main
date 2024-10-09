@@ -1,6 +1,9 @@
 const expenseForm = document.getElementById('expenseForm');
 const expenseList = document.getElementById('expenseList');
 
+// Fetch expenses when the page loads
+fetchExpenses();
+
 expenseForm.addEventListener('submit', (event) => {
     event.preventDefault();
 
@@ -8,73 +11,86 @@ expenseForm.addEventListener('submit', (event) => {
     const description = document.getElementById('description').value;
     const category = document.getElementById('category').value;
 
-    // Assuming you have a way to get the user_id from session/local storage
-    const user_id = 1; // replace with actual user ID
+    const token = localStorage.getItem('token');
 
     fetch('/expenses', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ user_id, description, amount, category }),
+        body: JSON.stringify({ amount, description, category }),
     })
     .then(response => {
         if (!response.ok) {
             return response.text().then((message) => { throw new Error(message); });
         }
-        return response.text(); 
+        return response.text();
     })
-    .then(() => {
-        // Clear the input fields
-        document.getElementById('amount').value = "";
-        document.getElementById('description').value = "";
-        document.getElementById('category').value = "";
-
-        // Refresh the expenses
-        loadExpenses();
+    .then(data => {
+        console.log("Expense added", data);
+        fetchExpenses();
+           // Clear input fields
+           document.getElementById('amount').value = '';
+           document.getElementById('description').value = '';
+           document.getElementById('category').value = ''; // Refresh expense list
     })
     .catch(error => {
-        console.log("Add expense error", error.message);
+        console.log("Error adding expense", error.message);
     });
 });
 
-function loadExpenses() {
-    fetch('/expenses')
-        .then(response => response.json())
-        .then(expenses => {
-            expenseList.innerHTML = ''; // Clear current list
-            expenses.forEach(expense => {
-                const li = document.createElement('li');
-                li.textContent = `${expense.description} - ${expense.amount} (${expense.category})`;
 
-                // Create a delete button
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.onclick = () => deleteExpense(expense.expense_id); // Attach delete function
+// Function to fetch expenses
+function fetchExpenses() {
+    const token = localStorage.getItem('token');
 
-                li.appendChild(deleteButton); // Append delete button to the list item
-                expenseList.appendChild(li);
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching expenses:", error);
-        });
-}
-
-function deleteExpense(expense_id) {
-    fetch(`/expenses/${expense_id}`, {
-        method: 'DELETE',
+    fetch('/expenses', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
     })
     .then(response => {
         if (!response.ok) {
-            return response.text().then((message) => { throw new Error(message); });
+            throw new Error('Failed to fetch expenses');
         }
-        loadExpenses(); // Refresh the expenses after deletion
+        return response.json();
+    })
+    .then(expenses => {
+        expenseList.innerHTML = '';
+        expenses.forEach(expense => {
+            const li = document.createElement('li');
+            li.textContent = `${expense.description}: ${expense.amount} (${expense.category})`;
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = () => deleteExpense(expense.expense_id);
+            li.appendChild(deleteButton);
+            expenseList.appendChild(li);
+        });
     })
     .catch(error => {
-        console.error("Delete expense error:", error);
+        console.log("Error fetching expenses", error.message);
     });
 }
 
-// Load expenses when the page loads
-window.onload = loadExpenses;
+// Function to delete expense
+function deleteExpense(expenseId) {
+    const token = localStorage.getItem('token');
+
+    fetch(`/expenses/${expenseId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to delete expense');
+        }
+        fetchExpenses(); // Refresh expense list
+    })
+    .catch(error => {
+        console.log("Error deleting expense", error.message);
+    });
+}

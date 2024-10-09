@@ -10,7 +10,6 @@
     <div class="expense-form-container">
         <h1>Expense Tracker</h1>
         <div id="userGreeting"></div>
-        <button id="logoutButton">Logout</button>
 
         <!-- Expense Form -->
         <form id="expenseForm">
@@ -35,16 +34,17 @@
 
         <h2>Expense List</h2>
         <ul id="expenseList"></ul>
+
+        <!-- Move Logout Button here -->
+        <button id="logoutButton">Logout</button>
     </div>
 
     <script src="/public/expense.js"></script>
     <script>
         // Display the logged-in user's name
-        // Display the logged-in user's name
-const username = localStorage.getItem('username'); // Get username from local storage
-const userGreeting = document.getElementById('userGreeting');
-userGreeting.textContent = `Welcome, ${username ? username : 'Guest'}!`; // Fallback to 'Guest' if username is null
-
+        const username = localStorage.getItem('username'); // Get username from local storage
+        const userGreeting = document.getElementById('userGreeting');
+        userGreeting.textContent = `Welcome, ${username ? username : 'Guest'}!`; // Fallback to 'Guest' if username is null
 
         // Logout functionality
         document.getElementById('logoutButton').addEventListener('click', () => {

@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker</title> 
+    <title>Expense Tracker</title>
     <link href="/public/expense.css" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
     <div class="expense-form-container">
         <h1>Expense Tracker</h1>
+
+        <!-- Premium Section -->
+        <div id="premiumSection">
+            <button id="premium-button">Buy Premium</button>
+        </div>
+
         <div id="userGreeting"></div>
 
         <!-- Expense Form -->
@@ -35,16 +42,57 @@
         <h2>Expense List</h2>
         <ul id="expenseList"></ul>
 
-        <!-- Move Logout Button here -->
+        <!-- Logout Button -->
         <button id="logoutButton">Logout</button>
+
+        <!-- Leaderboard Section -->
+        <h2>Leaderboard</h2>
+        <ul id="leaderboard"></ul>
+        <div id="leaderboardMessage" style="color: red;"></div>
     </div>
 
-    <script src="/public/expense.js"></script>
+    <script src="/public/expense.js" defer></script>
+
+    <!-- Add the script to check for premium status -->
     <script>
-        // Display the logged-in user's name
-        const username = localStorage.getItem('username'); // Get username from local storage
-        const userGreeting = document.getElementById('userGreeting');
-        userGreeting.textContent = `Welcome, ${username ? username : 'Guest'}!`; // Fallback to 'Guest' if username is null
+        const token = localStorage.getItem('token'); // assuming you store the token here after login
+
+        // Function to check if the logged-in user is a premium member
+        async function checkPremiumStatus() {
+            try {
+                const response = await fetch('/user/status', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`, // Pass the JWT token
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch premium status');
+                }
+
+                const data = await response.json();
+
+                // Update the button based on the user's premium status
+                const premiumButton = document.getElementById('premium-button');
+                if (data.isPremium) {
+                    premiumButton.textContent = 'You are a premium member';
+                    premiumButton.disabled = true;
+                } else {
+                    premiumButton.textContent = 'Buy Premium';
+                    premiumButton.disabled = false;
+                }
+
+            } catch (error) {
+                console.error('Error fetching premium status:', error);
+            }
+        }
+
+        // Call the function when the page loads after login
+        window.onload = () => {
+            checkPremiumStatus();
+        };
 
         // Logout functionality
         document.getElementById('logoutButton').addEventListener('click', () => {

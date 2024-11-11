@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <div class="expense_formContainer">
+        <h1>Expense Tracker</h1>
+        <div id="userGreeting"></div>
+        <button id="buyPremiumButton">Buy Premium</button>
+        <div id="premiumMessage" style="display: none;">You are a premium user!</div>
+
+        <form id="expense_Form">
+            <label for="amount">Money Spent:</label>
+            <input type="number" id="amount" name="amount" placeholder="enter amount" required><br><br>
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description" placeholder="enter description" required><br><br>
+            <label for="category">Category</label>
+            <select id="category" name="category" required>
+                <option value="">--select category</option>
+                <option value="food">food</option>
+                <option value="petrol">petrol</option>
+                <option value="salary">salary</option>
+                <option value="entertainment">entertainment</option>
+                <option value="others">others</option>
+            </select><br><br>
+            <button type="submit">Add Expense</button>
+        </form>
+
+        <h2>Expense List</h2>
+        <ul id="expenseList"></ul>
+
+        <!-- Leaderboard Section - hidden by default -->
+        <div id="leaderboardSection" style="display: none;">
+            <h3>Leaderboard</h3>
+            <div id="leaderboard"></div>
+        </div>
+
+        <button id="logoutbuttonid">Logout</button>
+    </div>
+    <script src="../public/js/expense.js"></script>
+    <script src="../public/js/buyPremium.js"></script>
+</body>
+</html>
